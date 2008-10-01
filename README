@@ -1,0 +1,71 @@
+= vimblog.vim
+
+== description
+
+   For Vi, Vim or GVim users, there is a simple way to manage your blog posts. Under Vim environment, you can create new blog posts, edit, list all categories, list older posts, delete posts, turn Published into Draft posts, and vice-versa.
+   It is out-of-the-box working for Wordpress, but very easilly, you can make it manage Blogger, MovableType, TextPattern, etc, platforms. Its the beauty of Open Source software. Study the code, change it, and use it. It is very safe to use it because unlike proprietary software, you can check for “phone_home” procedures, etc.
+
+==  requirements:
+
+   * you'll need VIM compiled with Ruby scripting support
+     - example: for Debian/Ubuntu: sudo apt-get install vim-ruby
+   * please, copy this file to one of your VIM dir
+     - example: to your .vim home folder: $HOME/.vim/vimlog.vim
+   * please, add this code to your .vimrc file:
+
+       if !exists('*Wordpress_vim')
+         runtime vimblog.vim
+       endif
+
+   * change your blog login/password info on the get_personal_data
+     function bellow. 
+   * make sure you have xmlrpc.php file in your / blog dir. If not, 
+     change the @xml variable to find it.
+   * testing: open vim, ando do 
+       :Blog rp 
+     to get your recent 10 posts.
+
+== how-to
+
+   * copy the script to your Vim scripts path, $HOME/.vim directory
+   * edit you .vimrc (if not exists, create it: $HOME/.vimrc) and insert:
+
+if !exists('*Wordpress_vim')
+runtime vimblog.vim
+endif
+
+   * open the vimblog.vim script and edit the personal data in def get_personal_data method approx. at line 97.
+   * @site value, do not insert “http://”. Just insert the blog address, like in my case “blog.tquadrado.com”
+   * @xml value, insert the path to your blog’s xmlrpc.php file. If, like in my case, it is in / from your blog address, do insert “/xmlrpc.php”
+   * run Vim and try fetching the last 10 posts by doing:
+
+:Blog rp
+
+If you can see them, it’s fine. If not, test this:
+
+   * check if the script is being found, by typing :B + TAB key. Upon code completion, it is ok. Remember, capital B.
+   * if error persist, check for the correct path for xmlrpc.php in @xml value.
+
+== license
+
+== LICENSE:
+
+    Copyright (c) 2007 pedro mg
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to
+    deal in the Software without restriction, including without limitation the
+    rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+    sell copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+    THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+    IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+    CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+                                                            
