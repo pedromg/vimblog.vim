@@ -10,18 +10,18 @@
 "       endif
 "
 "   - change your blog login/password info on the get_personal_data
-"     function bellow. 
-"   - make sure you have xmlrpc.php file in your / blog dir. If not, 
+"     function below.
+"   - make sure you have xmlrpc.php file in your / blog dir. If not,
 "     change the @xml variable to find it.
-"   - testing: open vim, ando do 
-"       :Blog rp 
+"   - testing: open vim, ando do
+"       :Blog rp
 "     to get your recent 10 posts.
 "   - Questions ? e-mail please ;)
 "   - Using it ? please, leave a word ;)
 
 
 if !has('ruby')
-    s:ErrMsg( "Error: Required vim compiled with +ruby" )
+    s:ErrMsg( "Error: Required vim compiled with +ruby was not found")
     finish
 endif
 
@@ -29,16 +29,16 @@ endif
 " Language:     wordpress_vim
 " Maintainer:   pedro mg <pedro.mota [at] gmail.com>
 " Version:      1.1
-" Last Change:  2008 Apr 04
+" Last Change:  2012 Mar 08
 " Remark:       Simple functions for vim blogging bundle in ruby.
-" Remark:       Please, if you fine tune this code, send it back  
+" Remark:       Please, if you fine tune this code, send it back
 " Remark:       for version upgrade ;)
 
 function! Blog_syn_hl()    " {{{2
   :syntax clear
   :syntax keyword wpType Post Title Date
-  :syntax region wpTitle start=/"/ end=/$/ 
-  :syntax region wpPostId start=/\[/ end=/\]/ 
+  :syntax region wpTitle start=/"/ end=/$/
+  :syntax region wpPostId start=/\[/ end=/\]/
   :highlight wpType ctermfg=Green guifg=LightGreen
   :highlight wpTitle cterm=bold ctermfg=Blue guifg=Blue guibg=LightCyan gui=bold
   :highlight wpPostId ctermfg=Red guifg=Red
@@ -48,42 +48,66 @@ endfunction
 function! Post_syn_hl()    " {{{3
   :syntax clear
   :runtime! syntax/html.vim   " content syntax is html hl, except for headers
-  :syntax keyword wpType Post Title Date Author Link Permalink Allow Comments Allow Pings Categs  
+  :syntax keyword wpType Post Title Date Author Link Permalink Allow Comments Allow Pings Categs
   :syntax region wpPostId start=/\[/ end=/\]/ contained
-  :syntax match wpFields /: .*/hs=s+2 contains=wpPostId 
+  :syntax match wpFields /: .*/hs=s+2 contains=wpPostId
   :highlight wpType ctermfg=Green guifg=LightGreen gui=bold
   :highlight wpPostId ctermfg=Red guifg=Red
   :highlight wpFields ctermfg=Blue guifg=Blue guibg=LightCyan
 endfunction
 " }}}3
 
+function! CloseQuickfixAndOpenaPost(id) " {{{3
+  cclose
+  new
+ruby <<EOF
+  id = VIM::evaluate("a:id")
+  Vim::command("Blog gp #{id}")
+EOF
+endfunction
+" {{{3
+
+function! FetchPostIDBasedOnCurrentLine() " {{{3
+  let l:temp = @@
+  execute "normal! yy"
+  let l:line = @@
+  let @@ = l:temp
+ruby <<EOF
+  val = VIM::evaluate("l:line").gsub(/.*\[(\d+)\].*/, "\\1")
+  VIM::command("let l:line = #{val}")
+  VIM::command("Blog gp #{val}")
+EOF
+  return l:line
+endfunction
+" {{{3
+
 " Vim blogging function
-" Language:     vim script 
+" Language:     vim script
 " Interface:    ruby
 " Maintainer:   pedro mg <pedro.mota [at] gmail.com>
 " Version:      1.2
 " Last Change:  2008 Jun 14
 " Remark:       script function for vim blogging bundle in ruby.
-" Remark:       Please, if you fine tune this code, send it back  
+" Remark:       Please, if you fine tune this code, send it back
 " Remark:       for version upgrade ;)
 " Remark:       V1.2 - commands added:
 " Remark:              - Blog link ADDRESS,TITLE,STRING
 
-:command -nargs=* Blog call Wordpress_vim(<f-args>)
+:command! -nargs=* Blog call Wordpress_vim(<f-args>)
 
 function! Wordpress_vim(start, ...)    " {{{1
-  call Blog_syn_hl() " comment if you don't wish syntax highlight activation
+  call Blog_syn_hl() " comment out if you don't wish syntax highlight activation
   try
 ruby <<EOF
   require 'xmlrpc/client.rb'
   require 'time.rb'
   class Wp_vim
-    
+
     #######
     # class initialization. Instantiates the @blog class variable to
     # retain blog site information for future api calls
     #
-    def initialize
+    def initialize #{{{2
       begin
         get_personal_data
         @blog = XMLRPC::Client.new(@site, @xml, @port)
@@ -92,11 +116,11 @@ ruby <<EOF
         xmlrpc_flt_xcptn(e)
       end
     end
-    
+
     #######
     # class variables for personnal data. Please *change* them accordingly.
     # CHANGE HERE:
-    def get_personal_data  
+    def get_personal_data
       @login = "" # insert your login here
       @passwd = "" # insert your password here
       @site = "" # insert your blog url here, but do not use http://
@@ -104,9 +128,9 @@ ruby <<EOF
       @port = 80 # change if necessary
       @blog_id = 0
       @user =  1
-    end
+    end 
 
-    def get_post_content
+    def get_post_content #{{{2
       post_content = {}
       new_post = VIM::Buffer.current[1][0..4].upcase == "Title".upcase
       post_content['new_post'] = new_post
@@ -119,30 +143,30 @@ ruby <<EOF
         post_content['categories'] = (VIM::Buffer.current[5]).gsub(/Categs *:/, '').split
         body = [] # from line 8 to the end, grab the post body content
         8.upto(VIM::Buffer.current.count) { |line| body << VIM::Buffer.current[line] }
-	post_content['description'] = body.join("\r")
+  post_content['description'] = body.join("\r")
       else
         post_content['post_id'] = ((VIM::Buffer.current[1]).gsub(/Post.*\[/, '')).strip.chop
         post_content['title'] = (VIM::Buffer.current[2]).gsub(/Title *:/, '')
         post_content['dateCreated'] = Time.parse(((VIM::Buffer.current[3]).gsub(/Date *:/, '')).strip)
         post_content['mt_allow_comments'] = (VIM::Buffer.current[7]).gsub(/Comments *:/, '')
         post_content['mt_allow_pings'] = (VIM::Buffer.current[8]).gsub(/Pings *:/, '')
-        post_content['categories'] = (VIM::Buffer.current[9]).gsub(/Categs *:/, '').split 
-	body = [] # from line 11 to the end, grab the post body content
+        post_content['categories'] = (VIM::Buffer.current[9]).gsub(/Categs *:/, '').split
+  body = [] # from line 11 to the end, grab the post body content
         11.upto(VIM::Buffer.current.count) { |line| body << VIM::Buffer.current[line] }
-	post_content['description'] = body.join("\r")
+  post_content['description'] = body.join("\r")
       end
       post_content['mt_exceprt'] = ''
       post_content['mt_text_more'] = ''
       post_content['mt_tb_ping_urls'] = []
       return post_content
-    end  
+    end 
 
     #######
     # publish the post. Verifies if it is new post, or an editied existing one.
     #
-    def blog_publish
+    def blog_publish #{{{2
       p = get_post_content
-      resp = blog_api("publish", p, true, p['new_post']) 
+      resp = blog_api("publish", p, true, p['new_post'])
       if (p['new_post'] and resp['post_id'])
       then
         VIM::command("enew!")
@@ -153,9 +177,9 @@ ruby <<EOF
     #######
     # save post as draft. Verifies if it is new post, or an editied existing one.
     #
-    def blog_draft
+    def blog_draft #{{{2
       p = get_post_content
-      resp = blog_api("draft", p, false, p['new_post']) 
+      resp = blog_api("draft", p, false, p['new_post'])
       if (p['new_post'] and resp['post_id'])
       then
         VIM::command("enew!")
@@ -166,62 +190,89 @@ ruby <<EOF
     #######
     # new post. Creates a template for a new post.
     #
-    def blog_np
+    def blog_np #{{{2
       @post_date = same_dt_fmt(Time.now)
       @post_author = @user
       VIM::command("call Post_syn_hl()")
       v = VIM::Buffer.current
       v.append(v.count-1, "Title    : ")
-      v.append(v.count-1, "Date     : #{@post_date}")  
+      v.append(v.count-1, "Date     : #{@post_date}")
       v.append(v.count-1, "Comments : 1")
       v.append(v.count-1, "Pings    : 1")
       v.append(v.count-1, "Categs   : ")
       v.append(v.count-1, " ")
       v.append(v.count-1, " ")
-      v.append(v.count-1, "<type from here...> ")
+      v.append(v.count-1, "<Enter your content after this line - DO NOT DELETE> ")
     end
 
     #######
-    # list of categories. Is opened in a new temporary window, because may me for assistance on
-    # creating/editing a post.
+    # list of categories. It is opened in a new quickfix window.
+    # The window can be dismissed by 'q', but if you hit <CR> on a category's line,
+    # that name will be yanked to the default buffer and quoted so that you can put it
+    # in a post.
     #
-    def blog_cl
+    def blog_cl #{{{2
       resp = blog_api("cl")
       # create a new window with syntax highlight.
-      # this allows you to rapidelly close the window (:q!) and continue blogging.
-      VIM::command(":new")
+      # this allows you to rapidly close the window (q) and continue blogging.
+      configure_quicklist do
+        VIM::command(":set wrap")
+        v = VIM::Buffer.current
+        ["CATEGORIES LIST:", " ", resp].flatten.each do |str|
+          v.append(v.count, str)
+        end
+        VIM::command(%q[nnoremap <buffer> <silent> <CR> :execute "normal! 0y$" \| :let @@="\"" . @@ . "\"" \|:cclose<cr>])
+      end
+    end
+
+    ####### # {{{3
+    # Utility function used to create a quickfix window which can be closed
+    # with a 'q' (similar to  what the Ack plugin does).  This can be overridden
+    # by passing in a string ('action') which defines the RHS of a Vimscript
+    # map statement e.g. configure_quicklist(%q{:echo 'moon base alpha!'})
+    #
+    # If a block is passed with additional VimRuby goodness, that will be executed
+    # in the context of the new buffer.  It yields back the buffer.
+    #
+    def configure_quicklist(qaction=':cclose<cr>') #{{{2
+      VIM::command(":copen 10")
+      VIM::command("setlocal modifiable")
       VIM::command("call Blog_syn_hl()")
-      VIM::command(":set wrap")
+      VIM::command("nnoremap <silent> <buffer> q #{qaction}")
       v = VIM::Buffer.current
-      v.append(v.count, "CATEGORIES LIST: ")
-      v.append(v.count, " ")
-      v.append(v.count, "\"#{resp.join('  ')}\"")
+      yield v
     end
 
     #######
     # recent [num] posts. Gets some info for the most recent [num] or 10 posts
     #
-    def blog_rp
+    def blog_rp #{{{2
       VIM::evaluate("a:0").to_i > 0 ? ((num = VIM::evaluate("a:1")).to_i ? num.to_i : num = 10) : num = 10
       resp = blog_api("rp", num)
       # create a new window with syntax highlight.
-      # this allows you to rapidely close the window (:q!) and get that post id.
-      VIM::command(":new")
-      VIM::command("call Blog_syn_hl()")
-      v = VIM::Buffer.current
-      v.append(v.count, "MOST RECENT #{num} POSTS: ")
-      v.append(v.count, " ")
-      resp.each { |r|
-        v.append(v.count, "Post : [#{r['post_id']}]  Date: #{r['post_date']}")
-        v.append(v.count, "Title: \"#{r['post_title']}\"")
-        v.append(v.count, " ")
-      }
+      # this allows you to rapidly close the window (:q!) and get that post id.
+      configure_quicklist do |buf|
+        enter_action = ':call CloseQuickfixAndOpenaPost(FetchPostIDBasedOnCurrentLine())<cr>'
+        VIM::command("nnoremap <silent> <buffer> <CR> #{enter_action}")
+
+        buf.append(0, "Move your cursor to the line with the postID and hit <CR> to edit it.")
+        buf.append(buf.count, " ")
+        buf.append(buf.count, "#{num} MOST RECENT POSTS:")
+        buf.append(buf.count, " ")
+
+        resp.each { |r|
+          buf.append(buf.count, "Post : [#{r['post_id']}]  Date: #{r['post_date']}")
+          buf.append(buf.count, "Title: \"#{r['post_title']}\"")
+          buf.append(buf.count, " ")
+        }
+
+      end
     end
 
     #######
     # get post [id]. Fetches blog post with id [id], or the last one.
     #
-    def blog_gp
+    def blog_gp #{{{2
       VIM::command("call Post_syn_hl()")
       VIM::evaluate("a:0").to_i > 0 ? ((id = VIM::evaluate("a:1")) ? id : id = nil) : id = nil
       resp = blog_api("gp", id)
@@ -243,7 +294,7 @@ ruby <<EOF
     #######
     # delete post with id [id]. Asks for confirmation first
     #
-    def blog_del
+    def blog_del #{{{2
       VIM::evaluate("a:0").to_i > 0 ? ((id = VIM::evaluate("a:1")) ? id : id = nil) : id = nil
       resp = blog_api("del", id)
       resp ? VIM.command("echo \"Blog post ##{id} successfully deleted\"") : VIM.command("echo \"Deletion problem for post id ##{id}\"")
@@ -255,7 +306,7 @@ ruby <<EOF
     # ** title (hint)
     # ** string
     #
-    def blog_link
+    def blog_link #{{{2
       v = VIM::Buffer.current
       link = {:link => '', :string => '', :title => ''}
       VIM::evaluate("a:0").to_i > 0 ? ((id = VIM::evaluate("a:1")) ? id : id = nil) : id = nil
@@ -267,15 +318,15 @@ ruby <<EOF
     #######
     # api calls. Allways returns an hash so that if api is changed, only this
     # function needs to be changed. One can use between Blogger, metaWeblog or
-    # MovableType very easilly. 
+    # MovableType very easily.
     #
-    def blog_api(fn_api, *args)
+    def blog_api(fn_api, *args) #{{{2
       begin
         case fn_api
 
         when "gp"
           resp = @blog.call("metaWeblog.getPost", args[0], @login, @passwd)
-	  @post_id = resp['postid']
+    @post_id = resp['postid']
           return { 'post_id' => resp['postid'],
             'post_title' => resp['title'],
             'post_date' => same_dt_fmt(resp['dateCreated'].to_time),
@@ -290,33 +341,33 @@ ruby <<EOF
             'post_body' => resp['description']
           }
 
-	when "rp"
+  when "rp"
           resp = @blog.call("mt.getRecentPostTitles", @blog_id, @login, @passwd, args[0])
-	  arr_hash = []
+    arr_hash = []
           resp.each { |r| arr_hash << { 'post_id' => r['postid'],
                                         'post_title' => r['title'],
                                         'post_date' => r['dateCreated'].to_time }
-	  }
-	  return arr_hash
+    }
+    return arr_hash
 
-	when "cl"
+  when "cl"
           resp = @blog.call("mt.getCategoryList", @blog_id, @login, @passwd)
-	  arr_hash = []
+    arr_hash = []
           resp.each { |r| arr_hash << r['categoryName'] }
-	  return arr_hash
+    return arr_hash
 
-	when "draft"
-	  args[2] ? call = "metaWeblog.newPost" : call = "metaWeblog.editPost" 
-	  args[2] ? which_id = @blog_id :  which_id = args[0]['post_id']
+  when "draft"
+    args[2] ? call = "metaWeblog.newPost" : call = "metaWeblog.editPost"
+    args[2] ? which_id = @blog_id :  which_id = args[0]['post_id']
           resp = @blog.call(call, which_id, @login, @passwd, args[0], args[1])  # hash content, boolean state ("publish"|"draft")
           return { 'post_id' => resp }
-	
+
         when "publish"
-	  args[2] ? call = "metaWeblog.newPost" : call = "metaWeblog.editPost" 
-	  args[2] ? which_id = @blog_id :  which_id = args[0]['post_id']
+    args[2] ? call = "metaWeblog.newPost" : call = "metaWeblog.editPost"
+    args[2] ? which_id = @blog_id :  which_id = args[0]['post_id']
           resp = @blog.call(call, which_id, @login, @passwd, args[0], args[1])  # hash content, boolean state ("publish"|"draft")
           return { 'post_id' => resp }
-  
+
          when "del"
           resp = @blog.call("metaWeblog.deletePost", "1234567890ABCDE", args[0], @login, @passwd)
           return resp
@@ -330,18 +381,18 @@ ruby <<EOF
     #######
     # same datetime format for dates
     #
-    def same_dt_fmt(dt)
+    def same_dt_fmt(dt) #{{{2
       dt.strftime('%m/%d/%Y %H:%M:%S %Z')
     end
 
     #######
-    # exception handling error display message for communication problems 
+    # exception handling error display message for communication problems
     #
-    def xmlrpc_flt_xcptn(excpt)
+    def xmlrpc_flt_xcptn(excpt) #{{{2
       msg = "Error code: #{excpt.faultCode} :: Error msg.:#{excpt.faultString}"
       VIM::command("echo \"#{msg}\"")
     end
-  
+
   end # class Wp_vim
   Wp_vim.new
 EOF
@@ -355,7 +406,7 @@ EOF
     :echo "Usage for Publishing a post:"
     :echo "  :Blog publish"
   catch /gc/
-    :echo "Usage for getting the list of Categories <new window>:"
+    :echo "Usage for getting the list of categories in a quickfix window:"
     :echo "  :Blog cl"
   catch /gp/
     :echo "Usage for Get Post [id]:"
@@ -372,14 +423,12 @@ EOF
     :echo "  - rp [x]   => show recent [x] posts"
     :echo "  - gp id    => get post with identification id"
     :echo "  - np       => create a new post"
-    :echo "  - publish  => publish an edited/new post" 
+    :echo "  - publish  => publish an edited/new post"
     :echo "  - draft    => save edited/new post as draft"
     :echo "  - gc       => get the list of categories"
     :echo "  - del id   => delete post with identification id"
     :echo "  --- syntax helpers:"
     :echo "  - link ADDRESS,TITLE,STRING   => insert link <a href='ADDRESS' title='TITLE'>STRING</a> link"
   endtry
-endfunction 
+endfunction
 " }}}1
-
-
