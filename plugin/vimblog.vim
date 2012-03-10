@@ -1,29 +1,5 @@
-" Requirements:
-"   - you'll need VIM compiled with Ruby scripting support
-"     - example: for Debian/Ubuntu: sudo apt-get install vim-ruby
-"   - please, copy this file to one of your VIM dir
-"     - example: to your .vim home folder: $HOME/.vim/vimlog.vim
-"   - please, add this code to your .vimrc file:
-"
-"       if !exists('*Wordpress_vim')
-"         runtime vimblog.vim
-"       endif
-"
-"   - change your blog login/password info on the get_personal_data
-"     function below.
-"   - make sure you have xmlrpc.php file in your / blog dir. If not,
-"     change the @xml variable to find it.
-"   - testing: open vim, ando do
-"       :Blog rp
-"     to get your recent 10 posts.
-"   - Questions ? e-mail please ;)
-"   - Using it ? please, leave a word ;)
+" For use and setup documentation, consult the Readme.md file
 
-
-if !has('ruby')
-    s:ErrMsg( "Error: Required vim compiled with +ruby was not found")
-    finish
-endif
 
 " Vim syntax functions
 " Language:     wordpress_vim
@@ -96,6 +72,10 @@ endfunction
 :command! -nargs=* Blog call Wordpress_vim(<f-args>)
 
 function! Wordpress_vim(start, ...)    " {{{1
+  if !has('ruby')
+      echoerr("Vimblog is not operational since it was not compiled with a Ruby interpreter (+ruby)")
+      finish
+  endif
   call Blog_syn_hl() " comment out if you don't wish syntax highlight activation
   try
 ruby <<EOF
