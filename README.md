@@ -39,9 +39,9 @@ $GIT_REPO_PATH vimblog`.  Git will check out the plugin for you as a
     following command.  Make sure it is in your `~/.vimrc` or, for
 MacVim + Janus users, make sure it is in `~/.vimrc.after`
 
-    if !exists('\*Wordpress\_vim')
-      runtime vimblog.vim
-    endif
+          if !exists('\*Wordpress\_vim')
+               runtime vimblog.vim
+          endif
 
 1.  Change your blog login/password info on the `get_personal_data`
     function in `vimblog.vim` near line 97.
