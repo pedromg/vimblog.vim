@@ -59,7 +59,7 @@ MacVim + Janus users, make sure it is in `~/.vimrc.after`
 
 ## Configuration
 
-here are some globals you may define in your `.vimrc`.
+Here are some globals you may define in your `.vimrc`.
 
 `g:vimblogImageStyle="css-class-1 css-class-2"` : This will provide CSS
 classes that are applied to the `<img>` tags that result from using the
