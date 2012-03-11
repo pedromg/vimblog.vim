@@ -91,7 +91,7 @@ ruby <<EOF
     def initialize(selector, *args) #{{{2
       begin
         get_personal_data
-        raise if @login.empty?
+        raise "Login credential was empty.  Vimblog needs configuration, probably." if @login.empty?
         @blog = XMLRPC::Client.new(@site, @xml, @port)
         self.send( ("blog_"+selector).to_sym, *args )
       rescue XMLRPC::FaultException => e
