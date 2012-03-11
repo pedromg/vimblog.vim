@@ -91,10 +91,13 @@ ruby <<EOF
     def initialize(selector, *args) #{{{2
       begin
         get_personal_data
+        raise if @login.empty?
         @blog = XMLRPC::Client.new(@site, @xml, @port)
-        self.send( ("blog_"+selector).to_sym )
+        self.send( ("blog_"+selector).to_sym, *args )
       rescue XMLRPC::FaultException => e
         xmlrpc_flt_xcptn(e)
+      rescue => ex
+        VIM::command("echo \"Unhandled Error:  #{ex} and #{ex.backtrace}\"")
       end
     end
 
@@ -125,20 +128,20 @@ ruby <<EOF
         post_content['dateCreated'] = Time.parse(((VIM::Buffer.current[2]).gsub(/Date *:/, '')).strip)
         post_content['mt_allow_comments'] = (VIM::Buffer.current[3]).gsub(/Comments *:/, '')
         post_content['mt_allow_pings'] = (VIM::Buffer.current[4]).gsub(/Pings *:/, '')
-        post_content['categories'] = (VIM::Buffer.current[5]).gsub(/Categs *:/, '').split
-        body = [] # from line 8 to the end, grab the post body content
-        8.upto(VIM::Buffer.current.count) { |line| body << VIM::Buffer.current[line] }
-  post_content['description'] = body.join("\r")
+        post_content['categories'] = (VIM::Buffer.current[5]).split(':').last.sub(/^\s+/,'').split(',')
+        body = [] # from line 7 to the end, grab the post body content
+        7.upto(VIM::Buffer.current.count) { |line| body << VIM::Buffer.current[line] }
+        post_content['description'] = body.join("\r")
       else
         post_content['post_id'] = ((VIM::Buffer.current[1]).gsub(/Post.*\[/, '')).strip.chop
         post_content['title'] = (VIM::Buffer.current[2]).gsub(/Title *:/, '')
         post_content['dateCreated'] = Time.parse(((VIM::Buffer.current[3]).gsub(/Date *:/, '')).strip)
         post_content['mt_allow_comments'] = (VIM::Buffer.current[7]).gsub(/Comments *:/, '')
         post_content['mt_allow_pings'] = (VIM::Buffer.current[8]).gsub(/Pings *:/, '')
-        post_content['categories'] = (VIM::Buffer.current[9]).gsub(/Categs *:/, '').split
-  body = [] # from line 11 to the end, grab the post body content
-        11.upto(VIM::Buffer.current.count) { |line| body << VIM::Buffer.current[line] }
-  post_content['description'] = body.join("\r")
+        post_content['categories'] = (VIM::Buffer.current[9]).split(':').last.sub(/^\s+/,'').split(',')
+        body = [] # from line 12 to the end, grab the post body content
+        12.upto(VIM::Buffer.current.count) { |line| body << VIM::Buffer.current[line] }
+        post_content['description'] = body.join("\r")
       end
       post_content['mt_exceprt'] = ''
       post_content['mt_text_more'] = ''
@@ -149,7 +152,7 @@ ruby <<EOF
     #######
     # publish the post. Verifies if it is new post, or an editied existing one.
     #
-    def blog_publish #{{{2
+    def blog_publish(*args) #{{{2
       p = get_post_content
       resp = blog_api("publish", p, true, p['new_post'])
       if (p['new_post'] and resp['post_id'])
@@ -162,7 +165,7 @@ ruby <<EOF
     #######
     # upload a media asset.  Returns the URL to the file
     #
-    def blog_um
+    def blog_um(*args)
       require 'xmlrpc/base64'
       require 'xmlrpc/client.rb'
 
@@ -194,7 +197,7 @@ ruby <<EOF
     #######
     # save post as draft. Verifies if it is new post, or an editied existing one.
     #
-    def blog_draft #{{{2
+    def blog_draft(*args) #{{{2
       p = get_post_content
       resp = blog_api("draft", p, false, p['new_post'])
       if (p['new_post'] and resp['post_id'])
@@ -207,7 +210,7 @@ ruby <<EOF
     #######
     # new post. Creates a template for a new post.
     #
-    def blog_np #{{{2
+    def blog_np(*args) #{{{2
       @post_date = same_dt_fmt(Time.now)
       @post_author = @user
       VIM::command("call Post_syn_hl()")
@@ -217,9 +220,7 @@ ruby <<EOF
       v.append(v.count-1, "Comments : 1")
       v.append(v.count-1, "Pings    : 1")
       v.append(v.count-1, "Categs   : ")
-      v.append(v.count-1, " ")
-      v.append(v.count-1, " ")
-      v.append(v.count-1, "<Enter your content after this line - DO NOT DELETE> ")
+      v.append(v.count-1, "<Enter your content after this line - DO NOT DELETE THIS LINE> ")
     end
 
     #######
@@ -228,7 +229,8 @@ ruby <<EOF
     # that name will be yanked to the default buffer and quoted so that you can put it
     # in a post.
     #
-    def blog_cl #{{{2
+    def blog_cl(*args) #{{{2
+      VIM::command(%q`echo "before api call"`)
       resp = blog_api("cl")
       # create a new window with syntax highlight.
       # this allows you to rapidly close the window (q) and continue blogging.
@@ -238,7 +240,7 @@ ruby <<EOF
         ["CATEGORIES LIST:", " ", resp].flatten.each do |str|
           v.append(v.count, str)
         end
-        VIM::command(%q[nnoremap <buffer> <silent> <CR> :execute "normal! 0y$" \| :let @@="\"" . @@ . "\"" \|:cclose<cr>])
+        VIM::command(%q[nnoremap <buffer> <silent> <CR> :execute "normal! 0y$" \| :cclose<cr>])
       end
     end
 
@@ -263,7 +265,7 @@ ruby <<EOF
     #######
     # recent [num] posts. Gets some info for the most recent [num] or 10 posts
     #
-    def blog_rp #{{{2
+    def blog_rp(*args) #{{{2
       VIM::evaluate("a:0").to_i > 0 ? ((num = VIM::evaluate("a:1")).to_i ? num.to_i : num = 10) : num = 10
       resp = blog_api("rp", num)
       # create a new window with syntax highlight.
@@ -289,7 +291,7 @@ ruby <<EOF
     #######
     # get post [id]. Fetches blog post with id [id], or the last one.
     #
-    def blog_gp #{{{2
+    def blog_gp(*args) #{{{2
       VIM::command("call Post_syn_hl()")
       VIM::evaluate("a:0").to_i > 0 ? ((id = VIM::evaluate("a:1")) ? id : id = nil) : id = nil
       resp = blog_api("gp", id)
@@ -311,7 +313,7 @@ ruby <<EOF
     #######
     # delete post with id [id]. Asks for confirmation first
     #
-    def blog_del #{{{2
+    def blog_del(*args) #{{{2
       VIM::evaluate("a:0").to_i > 0 ? ((id = VIM::evaluate("a:1")) ? id : id = nil) : id = nil
       resp = blog_api("del", id)
       resp ? VIM.command("echo \"Blog post ##{id} successfully deleted\"") : VIM.command("echo \"Deletion problem for post id ##{id}\"")
@@ -323,7 +325,7 @@ ruby <<EOF
     # ** title (hint)
     # ** string
     #
-    def blog_link #{{{2
+    def blog_link(*args) #{{{2
       v = VIM::Buffer.current
       link = {:link => '', :string => '', :title => ''}
       VIM::evaluate("a:0").to_i > 0 ? ((id = VIM::evaluate("a:1")) ? id : id = nil) : id = nil
@@ -358,35 +360,35 @@ ruby <<EOF
             'post_body' => resp['description']
           }
 
-  when "rp"
-          resp = @blog.call("mt.getRecentPostTitles", @blog_id, @login, @passwd, args[0])
-    arr_hash = []
-          resp.each { |r| arr_hash << { 'post_id' => r['postid'],
-                                        'post_title' => r['title'],
-                                        'post_date' => r['dateCreated'].to_time }
-    }
-    return arr_hash
+        when "rp"
+                resp = @blog.call("mt.getRecentPostTitles", @blog_id, @login, @passwd, args[0])
+          arr_hash = []
+                resp.each { |r| arr_hash << { 'post_id' => r['postid'],
+                                              'post_title' => r['title'],
+                                              'post_date' => r['dateCreated'].to_time }
+          }
+          return arr_hash
 
-  when "um"
-    args =  ["metaWeblog.newMediaObject", @blog_id, @login, @passwd, args.pop]
-    result = @blog.call *args
-    return result
+        when "um"
+          args =  ["metaWeblog.newMediaObject", @blog_id, @login, @passwd, args.pop]
+          result = @blog.call *args
+          return result
 
-  when "cl"
-          resp = @blog.call("mt.getCategoryList", @blog_id, @login, @passwd)
-    arr_hash = []
-          resp.each { |r| arr_hash << r['categoryName'] }
-    return arr_hash
+        when "cl"
+                resp = @blog.call("mt.getCategoryList", @blog_id, @login, @passwd)
+          arr_hash = []
+                resp.each { |r| arr_hash << r['categoryName'] }
+          return arr_hash
 
-  when "draft"
-    args[2] ? call = "metaWeblog.newPost" : call = "metaWeblog.editPost"
-    args[2] ? which_id = @blog_id :  which_id = args[0]['post_id']
+        when "draft"
+          args[2] ? call = "metaWeblog.newPost" : call = "metaWeblog.editPost"
+          args[2] ? which_id = @blog_id :  which_id = args[0]['post_id']
           resp = @blog.call(call, which_id, @login, @passwd, args[0], args[1])  # hash content, boolean state ("publish"|"draft")
           return { 'post_id' => resp }
 
         when "publish"
-    args[2] ? call = "metaWeblog.newPost" : call = "metaWeblog.editPost"
-    args[2] ? which_id = @blog_id :  which_id = args[0]['post_id']
+          call = args[2] ?  "metaWeblog.newPost" :  "metaWeblog.editPost"
+          which_id = args[2] ?  @blog_id :   args[0]['post_id']
           resp = @blog.call(call, which_id, @login, @passwd, args[0], args[1])  # hash content, boolean state ("publish"|"draft")
           return { 'post_id' => resp }
 
@@ -428,7 +430,7 @@ EOF
     :echo "Usage for Publishing a post:"
     :echo "  :Blog publish"
   catch /gc/
-    :echo "Usage for getting the list of categories in a quickfix window:"
+    :echo "Usage for getting the list of categories: <quickfix window>:"
     :echo "  :Blog cl"
   catch /gp/
     :echo "Usage for Get Post [id]:"
@@ -437,7 +439,7 @@ EOF
     :echo "Usage for New Post:"
     :echo "  :Blog np"
   catch /rp/
-    :echo "Usage for Recent [x] Posts (defaults to last 10): <new window>"
+    :echo "Usage for Recent [x] Posts (defaults to last 10): <quickfix window>"
     :echo "  :Blog rp [x]"
   catch /um/
     :echo "Usage for Upload Media"

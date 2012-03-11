@@ -52,13 +52,22 @@ MacVim + Janus users, make sure it is in `~/.vimrc.after`
 1.  To verify your installation, open vim, and do `:Blog rp` to get your
     recent 10 posts.
 
-## CONFIGURATION
+## Configuration
 
-Here are some globals you may define in your `.vimrc`.
+here are some globals you may define in your `.vimrc`.
 
 `g:vimblogImageStyle="centered"` : This will provide CSS classes that
 are applied to the `<img>` tags that result from using the media upload
 function.  Typically you would add `centered` or `featured-image`.
+
+## Known Issues
+
+*Categories*:  Multiple categories on initial post creation is handled properly and multiple categories are comma-delimited.  Thus you can have a category like `Science and Technology` on a line with `Dinner` like
+`Science and Technology, Dinner` and things are great.  When this is
+retrieved *back*, the API does not preserve the separation either as
+array elements or a delimited string and thus your separation breaks.
+For the time being you must re-insert those commas.  Thankfully the
+`:Blog cl` will help you build an accurate list.
 
 ## Troubleshooting
 
