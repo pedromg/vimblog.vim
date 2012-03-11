@@ -5,13 +5,18 @@
 For Vi, Vim or GVim users, there is a simple way to manage your blog
 posts.
 
-In the Vim environment you can now
+In the Vim environment you can now:
 
 * create new blog posts
 * edit / posts
 * list all categories
 * list older posts
 * Promote turn "draft" posts into "published" (and vice-versa)
+* Upload media to your blog from within VIM and get a link to it
+
+In short, if you've been hanging on to Textmate for its blogging bundle,
+you now have a comparable featureset in Vim thanks to Vimblog and
+[GIFL](http://github.com/sgharms/gifl).
 
 It is an out-of-the-box solution that works for Wordpress, but which can
 very easilly, be customized to manage Blogger, MovableType, TextPattern,
@@ -56,13 +61,23 @@ MacVim + Janus users, make sure it is in `~/.vimrc.after`
 
 here are some globals you may define in your `.vimrc`.
 
-`g:vimblogImageStyle="centered"` : This will provide CSS classes that
-are applied to the `<img>` tags that result from using the media upload
-function.  Typically you would add `centered` or `featured-image`.
+`g:vimblogImageStyle="css-class-1 css-class-2"` : This will provide CSS
+classes that are applied to the `<img>` tags that result from using the
+media upload function.  Typically you would add `centered` or
+`featured-image`.
+
+I put mine like so:
+
+          if !exists('\*Wordpress\_vim')
+               runtime vimblog.vim
+               g:vimblogImageStyle="centered"
+          endif
 
 ## Known Issues
 
-*Categories*:  Multiple categories on initial post creation is handled properly and multiple categories are comma-delimited.  Thus you can have a category like `Science and Technology` on a line with `Dinner` like
+*Categories*:  Multiple categories on initial post creation is handled
+properly and multiple categories are comma-delimited.  Thus you can have
+a category like `Science and Technology` on a line with `Dinner` like
 `Science and Technology, Dinner` and things are great.  When this is
 retrieved *back*, the API does not preserve the separation either as
 array elements or a delimited string and thus your separation breaks.
