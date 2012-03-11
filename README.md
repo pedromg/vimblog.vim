@@ -52,6 +52,14 @@ MacVim + Janus users, make sure it is in `~/.vimrc.after`
 1.  To verify your installation, open vim, and do `:Blog rp` to get your
     recent 10 posts.
 
+## CONFIGURATION
+
+Here are some globals you may define in your `.vimrc`.
+
+`g:vimblogImageStyle="centered"` : This will provide CSS classes that
+are applied to the `<img>` tags that result from using the media upload
+function.  Typically you would add `centered` or `featured-image`.
+
 ## Troubleshooting
 
 ### "That Didn't work"

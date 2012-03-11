@@ -1,3 +1,4 @@
+" vim: set foldmethod=marker: "
 " For use and setup documentation, consult the Readme.md file
 
 
@@ -181,12 +182,14 @@ ruby <<EOF
       end
 
       result = blog_api("um", data)
-      url  = "<a href=\"#{result['url']}\"><img src=\"#{result['url']}\" alt=\"#\"></a>"
+      gas = VIM::evaluate("g:vimblogImageStyle")
+      gas = (gas == 0 ? '' : 'class="' + gas + '"')
+      url  = "<a href=\"#{result['url']}\"><img #{gas} src=\"#{result['url']}\" alt=\"#\"></a>"
 
       v = VIM::Buffer.current
       ln = v.line_number
       v.append(ln, url)
-      VIM::command("normal! jf#")
+      VIM::command("normal! j==f#")
     end
     #######
     # save post as draft. Verifies if it is new post, or an editied existing one.
