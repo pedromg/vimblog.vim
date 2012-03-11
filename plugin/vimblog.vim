@@ -69,7 +69,7 @@ endfunction
 " Remark:       V1.2 - commands added:
 " Remark:              - Blog link ADDRESS,TITLE,STRING
 
-:command! -nargs=* Blog call Wordpress_vim(<f-args>)
+:command! -nargs=* -complete=file Blog call Wordpress_vim(<f-args>)
 
 function! Wordpress_vim(start, ...)    " {{{1
   if !has('ruby')
@@ -87,14 +87,18 @@ ruby <<EOF
     # class initialization. Instantiates the @blog class variable to
     # retain blog site information for future api calls
     #
-    def initialize #{{{2
+    def initialize(selector, *args) #{{{2
       begin
         get_personal_data
         @blog = XMLRPC::Client.new(@site, @xml, @port)
-        self.send("blog_"+VIM::evaluate("a:start"))
+        self.send( ("blog_"+selector).to_sym )
       rescue XMLRPC::FaultException => e
         xmlrpc_flt_xcptn(e)
       end
+    end
+
+    def method_missing(sym, *args)
+      VIM.command("echo \"Vimblog fatal error: unable to resolve #{sym.to_s}\"")
     end
 
     #######
@@ -154,6 +158,36 @@ ruby <<EOF
       end
     end
 
+    #######
+    # upload a media asset.  Returns the URL to the file
+    #
+    def blog_um
+      require 'xmlrpc/base64'
+      require 'xmlrpc/client.rb'
+
+      VIM::command("let l:storage = @@")
+
+      data = {}
+
+      full_path   = VIM::evaluate("a:1")
+      full_path   = File.expand_path(full_path) if full_path =~ /^~/
+      upload_name = full_path.split('/').last
+
+      data['name'] = upload_name
+      begin
+        data['bits'] = XMLRPC::Base64.new(IO.read(full_path))
+      rescue => ex
+        VIM::command("echo \"Encoding failed because #{ex.to_s}\"")
+      end
+
+      result = blog_api("um", data)
+      url  = "<a href=\"#{result['url']}\"><img src=\"#{result['url']}\" alt=\"#\"></a>"
+
+      v = VIM::Buffer.current
+      ln = v.line_number
+      v.append(ln, url)
+      VIM::command("normal! jf#")
+    end
     #######
     # save post as draft. Verifies if it is new post, or an editied existing one.
     #
@@ -330,6 +364,11 @@ ruby <<EOF
     }
     return arr_hash
 
+  when "um"
+    args =  ["metaWeblog.newMediaObject", @blog_id, @login, @passwd, args.pop]
+    result = @blog.call *args
+    return result
+
   when "cl"
           resp = @blog.call("mt.getCategoryList", @blog_id, @login, @passwd)
     arr_hash = []
@@ -374,7 +413,7 @@ ruby <<EOF
     end
 
   end # class Wp_vim
-  Wp_vim.new
+  Wp_vim.new(VIM::evaluate("a:start"), (VIM::evaluate("a:0") > 0 ? ([] << VIM::evaluate("a:000")): '' ))
 EOF
   catch /del/
     :echo "Usage for deleting a post:"
@@ -397,12 +436,16 @@ EOF
   catch /rp/
     :echo "Usage for Recent [x] Posts (defaults to last 10): <new window>"
     :echo "  :Blog rp [x]"
+  catch /um/
+    :echo "Usage for Upload Media"
+    :echo "  :Blog um [filename]"
   catch //
     :echo "Usage is :Blog option [arg]"
     :echo " switches:"
     :echo "  - rp [x]   => show recent [x] posts"
     :echo "  - gp id    => get post with identification id"
     :echo "  - np       => create a new post"
+    :echo "  - um [f]   => upload media asset [path to asset]"
     :echo "  - publish  => publish an edited/new post"
     :echo "  - draft    => save edited/new post as draft"
     :echo "  - gc       => get the list of categories"
