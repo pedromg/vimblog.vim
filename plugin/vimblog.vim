@@ -92,8 +92,11 @@ ruby <<EOF
       begin
         get_personal_data
         raise "Login credential was empty.  Vimblog needs configuration, probably." if @login.empty?
+
+        args.flatten!
+
         @blog = XMLRPC::Client.new(@site, @xml, @port)
-        self.send( ("blog_"+selector).to_sym, *args )
+        self.send( ("blog_"+selector).to_sym, args )
       rescue XMLRPC::FaultException => e
         xmlrpc_flt_xcptn(e)
       rescue => ex
@@ -165,7 +168,7 @@ ruby <<EOF
     #######
     # upload a media asset.  Returns the URL to the file
     #
-    def blog_um(*args)
+    def blog_um(args)
       require 'xmlrpc/base64'
       require 'xmlrpc/client.rb'
 
@@ -173,8 +176,9 @@ ruby <<EOF
 
       data = {}
 
-      full_path   = VIM::evaluate("a:1")
-      full_path   = File.expand_path(full_path) if full_path =~ /^~/
+      full_path   = File.expand_path(args[0])
+      raise "Could not gather a full file path" if full_path.empty?
+
       upload_name = full_path.split('/').last
 
       data['name'] = upload_name
@@ -418,7 +422,7 @@ ruby <<EOF
     end
 
   end # class Wp_vim
-  Wp_vim.new(VIM::evaluate("a:start"), (VIM::evaluate("a:0") > 0 ? ([] << VIM::evaluate("a:000")): '' ))
+  Wp_vim.new(VIM::evaluate("a:start"), (VIM::evaluate("a:0") > 0 ?  VIM::evaluate("a:000") : '' ))
 EOF
   catch /del/
     :echo "Usage for deleting a post:"
