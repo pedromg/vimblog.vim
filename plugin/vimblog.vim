@@ -96,7 +96,8 @@ ruby <<EOF
         args.flatten!
 
         @blog = XMLRPC::Client.new(@site, @xml, @port)
-        self.send( ("blog_"+selector).to_sym, args )
+        disp_method = ('blog_' + selector).to_sym
+        self.send(disp_method, args)
       rescue XMLRPC::FaultException => e
         xmlrpc_flt_xcptn(e)
       rescue => ex
@@ -105,7 +106,7 @@ ruby <<EOF
     end
 
     def method_missing(sym, *args)
-      VIM.command("echo \"Vimblog fatal error: unable to resolve #{sym.to_s}\"")
+      VIM.command("echo \"Vimblog fatal error: unable to resolve #{sym.to_s} with #{args}\"")
     end
 
     #######
@@ -120,6 +121,7 @@ ruby <<EOF
       @blog_id = 0
       @user =  1
     end 
+
 
     def get_post_content #{{{2
       post_content = {}
@@ -185,19 +187,21 @@ ruby <<EOF
       begin
         data['bits'] = XMLRPC::Base64.new(IO.read(full_path))
       rescue => ex
-        VIM::command("echo \"Encoding failed because #{ex.to_s}\"")
+        VIM::command("echom \"Encoding failed because #{ex.to_s}\"")
       end
 
       result = blog_api("um", data)
       gas = VIM::evaluate("g:vimblogImageStyle")
-      gas = (gas == 0 ? '' : 'class="' + gas + '"')
-      url  = "<a href=\"#{result['url']}\"><img #{gas} src=\"#{result['url']}\" alt=\"#\"></a>"
+      VIM::command("echo \"Your g:vimblogImageStyle configuration was not set.  Check out the vimblog README.md\"")
+      gas = (gas.nil? ? '' : 'class="' + gas + '"')
+      url  = "<a target=\"_new\"href=\"#{result['url']}\"><img #{gas} src=\"#{result['url']}\" alt=\"#\"></a>"
 
       v = VIM::Buffer.current
       ln = v.line_number
       v.append(ln, url)
       VIM::command("normal! j==f#")
     end
+
     #######
     # save post as draft. Verifies if it is new post, or an editied existing one.
     #
