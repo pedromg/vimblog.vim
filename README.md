@@ -13,6 +13,8 @@ In the Vim environment you can now:
 * list older posts
 * Promote turn "draft" posts into "published" (and vice-versa)
 * Upload media to your blog from within VIM and get a link to it
+* *Mac+Wordpress+Chrome*:  After using `:Blog draft` you can preview
+  your draft with `<Leader>p`, `\\p` by default
 
 In short, if you've been hanging on to Textmate for its blogging bundle,
 you now have a comparable featureset in Vim thanks to Vimblog and

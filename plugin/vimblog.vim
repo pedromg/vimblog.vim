@@ -11,6 +11,7 @@
 " Remark:       Please, if you fine tune this code, send it back
 " Remark:       for version upgrade ;)
 
+" Highlighter functions{{{ 1
 function! Blog_syn_hl()    " {{{2
   :syntax clear
   :syntax keyword wpType Post Title Date
@@ -22,7 +23,7 @@ function! Blog_syn_hl()    " {{{2
 endfunction
 " }}}2
 
-function! Post_syn_hl()    " {{{3
+function! Post_syn_hl()    " {{{ 2
   :syntax clear
   :runtime! syntax/html.vim   " content syntax is html hl, except for headers
   :syntax keyword wpType Post Title Date Author Link Permalink Allow Comments Allow Pings Categs
@@ -32,8 +33,10 @@ function! Post_syn_hl()    " {{{3
   :highlight wpPostId ctermfg=Red guifg=Red
   :highlight wpFields ctermfg=Blue guifg=Blue guibg=LightCyan
 endfunction
-" }}}3
+" }}} 2
+" }}} 1
 
+" Auxilary Ruby commands{{{ 2
 function! CloseQuickfixAndOpenaPost(id) " {{{3
   cclose
   new
@@ -42,9 +45,27 @@ ruby <<EOF
   Vim::command("Blog gp #{id}")
 EOF
 endfunction
-" {{{3
+" }}}3
 
-function! FetchPostIDBasedOnCurrentLine() " {{{3
+function! WordpressPreviewWithChromeOnMac() " {{{ 3
+  let l:storage = @@
+  let @@ = 'none'
+
+  execute "normal! gg/Link\<cr>f:2ly$g`."
+  if @@ == 'none'
+    echom("No preview URL found")
+  else
+    let l:url = @@ . '&preview=true'
+    let @@ = l:url
+    echo('Previewing: ' . l:url)
+    exec(system("open -a \"Google Chrome\" \"". l:url  . "\""))
+  endif
+
+  let @@ = l:storage
+endfunction
+" }}}3
+
+function! FetchPostIDBasedOnCurrentLine() " {{{ 3
   let l:temp = @@
   execute "normal! yy"
   let l:line = @@
@@ -56,7 +77,8 @@ ruby <<EOF
 EOF
   return l:line
 endfunction
-" {{{3
+" }}} 3
+" }}} 2
 
 " Vim blogging function
 " Language:     vim script
@@ -213,6 +235,7 @@ ruby <<EOF
         VIM::command("enew!")
         VIM::command("Blog gp #{resp['post_id']}")
       end
+      VIM::command("nnoremap <buffer> <Leader>p :call WordpressPreviewWithChromeOnMac()<cr>")
     end
 
     #######
