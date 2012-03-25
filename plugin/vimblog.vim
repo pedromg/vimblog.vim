@@ -264,7 +264,7 @@ ruby <<EOF
       v.append(v.count-1, "Comments : 1")
       v.append(v.count-1, "Pings    : 1")
       v.append(v.count-1, "Categs   : ")
-      v.append(v.count-1, "<Enter your content after this line - DO NOT DELETE THIS LINE> ")
+      v.append(v.count-1, "<Enter your content after this line - DO NOT DELETE THIS LINE>")
     end
 
     #######
