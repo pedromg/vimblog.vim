@@ -99,6 +99,11 @@ function! Wordpress_vim(start, ...)    " {{{1
       echoerr("Vimblog is not operational since it was not compiled with a Ruby interpreter (+ruby)")
       finish
   endif
+  if !exists("g:vimblogConfig")
+      echoerr("Vimblog is not operational since its g:vimblogConfig does not exist.")
+      finish
+  endif
+
   call Blog_syn_hl() " comment out if you don't wish syntax highlight activation
   try
 ruby <<EOF
@@ -135,13 +140,15 @@ ruby <<EOF
     # class variables for personnal data. Please *change* them accordingly.
     # CHANGE HERE:
     def get_personal_data
-      @login = "" # insert your login here
-      @passwd = "" # insert your password here
-      @site = "" # insert your blog url here, but do not use http://
-      @xml = "/xmlrpc.php" # change if necessary
-      @port = 80 # change if necessary
+      config = VIM::evaluate("g:vimblogConfig")
+      VIM::command("echo \"Your g:vimblogConfig configuration was not set.  Check out the vimblog README.md\"") unless config
+      @login   = config["login"]
+      @passwd  = config["passwd"]
+      @site    = config["site"]
+      @xml     = config["xml_rpc_path"]
+      @port    = config["port"]
       @blog_id = 0
-      @user =  1
+      @user    = 1
     end
 
 
@@ -213,8 +220,9 @@ ruby <<EOF
       end
 
       result = blog_api("um", data)
-      gas = VIM::evaluate("g:vimblogImageStyle")
-      VIM::command("echo \"Your g:vimblogImageStyle configuration was not set.  Check out the vimblog README.md\"") unless gas
+      config = VIM::evaluate("g:vimblogConfig")
+      gas    = config['image_style']
+      VIM::command("echo \"Your g:vimblogConfig['image_style'] configuration was not set.  Check out the vimblog README.md\"") unless gas
       gas = (gas.nil? ? '' : 'class="' + gas + '"')
       url  = "<a target=\"_new\" href=\"#{result['url']}\"><img #{gas} src=\"#{result['url']}\" alt=\"#\"></a>"
 
