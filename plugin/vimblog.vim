@@ -142,7 +142,7 @@ ruby <<EOF
       @port = 80 # change if necessary
       @blog_id = 0
       @user =  1
-    end 
+    end
 
 
     def get_post_content #{{{2
@@ -174,7 +174,7 @@ ruby <<EOF
       post_content['mt_text_more'] = ''
       post_content['mt_tb_ping_urls'] = []
       return post_content
-    end 
+    end
 
     #######
     # publish the post. Verifies if it is new post, or an editied existing one.
@@ -214,9 +214,9 @@ ruby <<EOF
 
       result = blog_api("um", data)
       gas = VIM::evaluate("g:vimblogImageStyle")
-      VIM::command("echo \"Your g:vimblogImageStyle configuration was not set.  Check out the vimblog README.md\"")
+      VIM::command("echo \"Your g:vimblogImageStyle configuration was not set.  Check out the vimblog README.md\"") unless gas
       gas = (gas.nil? ? '' : 'class="' + gas + '"')
-      url  = "<a target=\"_new\"href=\"#{result['url']}\"><img #{gas} src=\"#{result['url']}\" alt=\"#\"></a>"
+      url  = "<a target=\"_new\" href=\"#{result['url']}\"><img #{gas} src=\"#{result['url']}\" alt=\"#\"></a>"
 
       v = VIM::Buffer.current
       ln = v.line_number
@@ -376,7 +376,10 @@ ruby <<EOF
 
         when "gp"
           resp = @blog.call("metaWeblog.getPost", args[0], @login, @passwd)
-    @post_id = resp['postid']
+      @post_id = resp['postid']
+          body = resp['description'] +
+                 ( resp['mt_text_more'].empty? ?
+                   '' : '<!--more-->' + resp['mt_text_more'] )
           return { 'post_id' => resp['postid'],
             'post_title' => resp['title'],
             'post_date' => same_dt_fmt(resp['dateCreated'].to_time),
@@ -388,7 +391,7 @@ ruby <<EOF
             'post_allow_pings' => resp['mt_allow_pings'],
             'post_ping_status' => resp['mt_ping_status'],
             'post_categories' => resp['categories'].join(' '),
-            'post_body' => resp['description']
+            'post_body' => body
           }
 
         when "rp"
