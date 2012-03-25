@@ -47,7 +47,7 @@ EOF
 endfunction
 " }}}3
 
-function! WordpressPreviewWithChromeOnMac() " {{{ 3
+function! WordpressViewWithChromeOnMac(...) " {{{ 3
   let l:storage = @@
   let @@ = 'none'
 
@@ -55,9 +55,14 @@ function! WordpressPreviewWithChromeOnMac() " {{{ 3
   if @@ == 'none'
     echom("No preview URL found")
   else
-    let l:url = @@ . '&preview=true'
-    let @@ = l:url
-    echo('Previewing: ' . l:url)
+    if (a:0 > 0 )
+      let l:url = @@ . '&preview=true'
+      let @@ = l:url
+      echo('Previewing: ' . l:url)
+    else
+      let l:url = @@
+      echo('Viewing: ' . l:url)
+    endif
     exec(system("open -a \"Google Chrome\" \"". l:url  . "\""))
   endif
 
@@ -243,7 +248,7 @@ ruby <<EOF
         VIM::command("enew!")
         VIM::command("Blog gp #{resp['post_id']}")
       end
-      VIM::command("nnoremap <buffer> <Leader>p :call WordpressPreviewWithChromeOnMac()<cr>")
+      VIM::command("nnoremap <buffer> <Leader>p :call WordpressViewWithChromeOnMac('preview-mode')<cr>")
     end
 
     #######
@@ -347,6 +352,7 @@ ruby <<EOF
       v.append(v.count-1, " ")
       v.append(v.count-1, " ")
       resp['post_body'].each_line { |l| v.append(v.count-1, l.strip)}
+      VIM::command("nnoremap <buffer> <Leader>p :call WordpressViewWithChromeOnMac()<cr>")
     end
 
     #######
