@@ -14,7 +14,9 @@ In the Vim environment you can now:
 * Promote turn "draft" posts into "published" (and vice-versa)
 * Upload media to your blog from within VIM and get a link to it
 * *Mac+Wordpress+Chrome*:  After using `:Blog draft` you can preview
-  your draft with `<Leader>p`, `\\p` by default
+  your draft with `<Leader>p`, `\\p` by default.  Additionally, if you
+  access a pre-existing post (`Blog rp`, then `<CR>` on a line with the ID
+  in it), thereafter `\\p` will launch the entry in Chrome.
 
 In short, if you've been hanging on to Textmate for its blogging bundle,
 you now have a comparable featureset in Vim thanks to Vimblog and
@@ -61,19 +63,23 @@ MacVim + Janus users, make sure it is in `~/.vimrc.after`
 
 ## Configuration
 
-Here are some globals you may define in your `.vimrc`.
+**YOU MUST** define the following global in your `.vimrc`.
 
-`g:vimblogImageStyle="css-class-1 css-class-2"` : This will provide CSS
-classes that are applied to the `<img>` tags that result from using the
-media upload function.  Typically you would add `centered` or
-`featured-image`.
+          let g:vimblogConfig = {'login': '*username*', 'passwd': '*pw*', 'site': '*yoursite*', 'xml_rpc_path': '/xmlrpc.php', 'port': '80', 'image_style': '*classes you want to add to images*'}
 
 I put mine like so:
 
           if !exists('\*Wordpress\_vim')
                runtime vimblog.vim
-               g:vimblogImageStyle="centered"
+               let g:vimblogConfig = { ... my dictionary ...}
           endif
+
+`image_style` : This will provide CSS classes that are applied to the
+`<img>` tags that result from using the media upload function.
+Typically you would add `centered` or `featured-image`.
+
+Use of this configuration dictionary allows the configuration and the
+code to be separated.
 
 ## Known Issues
 
