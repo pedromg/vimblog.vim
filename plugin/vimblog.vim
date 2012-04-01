@@ -180,6 +180,12 @@ ruby <<EOF
       @user    = 1
     end
 
+    def calculate_date(line)
+      line.gsub!(/Date *:/, '').strip!
+      parsed_line = DateTime.strptime(line,"%m/%d/%Y %H:%M:%S")
+      raise "Parsed line was nil" if parsed_line.iso8601.empty?
+      parsed_line
+    end
 
     def get_post_content #{{{2
       post_content = {}
@@ -188,7 +194,7 @@ ruby <<EOF
       case new_post
       when true
         post_content['title'] = (VIM::Buffer.current[1]).gsub(/Title *:/, '').strip
-        post_content['dateCreated'] = Time.parse(((VIM::Buffer.current[2]).gsub(/Date *:/, '')).strip)
+        post_content['dateCreated'] = calculate_date(VIM::Buffer.current[2])
         post_content['mt_allow_comments'] = (VIM::Buffer.current[3]).gsub(/Comments *:/, '')
         post_content['mt_allow_pings'] = (VIM::Buffer.current[4]).gsub(/Pings *:/, '')
         post_content['categories'] = (VIM::Buffer.current[5]).split(':').last.sub(/^\s+/,'').split(',')
@@ -198,7 +204,7 @@ ruby <<EOF
       else
         post_content['post_id'] = ((VIM::Buffer.current[1]).gsub(/Post.*\[/, '')).strip.chop
         post_content['title'] = (VIM::Buffer.current[2]).gsub(/Title *:/, '')
-        post_content['dateCreated'] = Time.parse(((VIM::Buffer.current[3]).gsub(/Date *:/, '')).strip)
+        post_content['dateCreated'] = calculate_date(VIM::Buffer.current[3])
         post_content['mt_allow_comments'] = (VIM::Buffer.current[7]).gsub(/Comments *:/, '')
         post_content['mt_allow_pings'] = (VIM::Buffer.current[8]).gsub(/Pings *:/, '')
         post_content['categories'] = (VIM::Buffer.current[9]).split(':').last.sub(/^\s+/,'').split(',')
