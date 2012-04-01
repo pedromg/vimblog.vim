@@ -212,7 +212,8 @@ ruby <<EOF
         12.upto(VIM::Buffer.current.count) { |line| body << VIM::Buffer.current[line] }
         post_content['description'] = body.join("\r")
       end
-      post_content['mt_exceprt'] = ''
+
+      post_content['mt_excerpt'] = ''
       post_content['mt_text_more'] = ''
       post_content['mt_tb_ping_urls'] = []
       return post_content
