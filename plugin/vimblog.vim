@@ -37,6 +37,23 @@ endfunction
 " }}} 1
 
 " Auxilary Ruby commands{{{ 2
+
+"{{{3
+function! BlogHelp()
+  echo "Usage is :Blog option [arg]"
+  echo " switches:"
+  echo "  - rp [x]    => show recent [x] posts"
+  echo "  - gp id     => get post with identification id"
+  echo "  - np        => create a new post"
+  echo "  - um file   => upload media asset [path to asset]"
+  echo "  - publish   => publish an edited/new post"
+  echo "  - draft     => save edited/new post as draft"
+  echo "  - gc        => get the list of categories"
+  echo "  - del id    => delete post with identification id"
+  echo "  - help      => this message"
+endfunction
+"}}}3
+
 function! CloseQuickfixAndOpenaPost(id) " {{{3
   cclose
   new
@@ -110,10 +127,14 @@ function! Wordpress_vim(start, ...)    " {{{1
   endif
 
   call Blog_syn_hl() " comment out if you don't wish syntax highlight activation
+" }}}1
+
   try
+" {{{1
 ruby <<EOF
-  require 'xmlrpc/client.rb'
-  require 'time.rb'
+  require 'xmlrpc/client'
+  require 'time'
+  require 'date'
   class Wp_vim
 
     #######
@@ -133,8 +154,12 @@ ruby <<EOF
       rescue XMLRPC::FaultException => e
         xmlrpc_flt_xcptn(e)
       rescue => ex
-        VIM::command("echo \"Unhandled Error:  #{ex} and #{ex.backtrace}\"")
+        VIM::command("echo \"Unhandled Error:  #{ex.to_s} and #{ex.backtrace.join('*')}\"")
       end
+    end
+
+    def blog_help(args)
+      blog_api('help')
     end
 
     def method_missing(sym, *args)
@@ -201,7 +226,7 @@ ruby <<EOF
       end
     end
 
-    #######
+    #######"{{{
     # upload a media asset.  Returns the URL to the file
     #
     def blog_um(args)
@@ -422,6 +447,9 @@ ruby <<EOF
           result = @blog.call *args
           return result
 
+        when "help"
+          VIM::command("throw \"help\"")
+
         when "cl"
                 resp = @blog.call("mt.getCategoryList", @blog_id, @login, @passwd)
           arr_hash = []
@@ -468,6 +496,8 @@ ruby <<EOF
   end # class Wp_vim
   Wp_vim.new(VIM::evaluate("a:start"), (VIM::evaluate("a:0") > 0 ?  VIM::evaluate("a:000") : '' ))
 EOF
+" }}} 1
+" {{{ 1
   catch /del/
     :echo "Usage for deleting a post:"
     :echo "  :Blog del id"
@@ -492,19 +522,11 @@ EOF
   catch /um/
     :echo "Usage for Upload Media"
     :echo "  :Blog um [filename]"
-  catch //
-    :echo "Usage is :Blog option [arg]"
-    :echo " switches:"
-    :echo "  - rp [x]   => show recent [x] posts"
-    :echo "  - gp id    => get post with identification id"
-    :echo "  - np       => create a new post"
-    :echo "  - um [f]   => upload media asset [path to asset]"
-    :echo "  - publish  => publish an edited/new post"
-    :echo "  - draft    => save edited/new post as draft"
-    :echo "  - gc       => get the list of categories"
-    :echo "  - del id   => delete post with identification id"
-    :echo "  --- syntax helpers:"
-    :echo "  - link ADDRESS,TITLE,STRING   => insert link <a href='ADDRESS' title='TITLE'>STRING</a> link"
+  catch /help/
+    call BlogHelp()
+  catch /(.*)/
+    :echo v:exception
+    call BlogHelp()
   endtry
 endfunction
 " }}}1
