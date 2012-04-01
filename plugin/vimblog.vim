@@ -426,7 +426,6 @@ ruby <<EOF
     # MovableType very easily.
     #
     def blog_api(fn_api, *args) #{{{2
-      VIM::command("echo \"IN the api and operating on #{fn_api}\"")
       begin
         case fn_api
 
