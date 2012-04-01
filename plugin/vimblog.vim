@@ -363,6 +363,31 @@ ruby <<EOF
       end
     end
 
+    def blog_xmlrpc_debug(*args) #{{{2
+      VIM::command("echo \"Creating a Debuggable Post\"")
+      post_content = {}
+
+      post_content['title']             = 'Debugging VimBlog Post'
+      post_content['dateCreated']       = calculate_date("Date     : #{same_dt_fmt(Time.now)}")
+      post_content['mt_allow_comments'] = 1
+      post_content['mt_allow_pings']    = 1
+      post_content['categories']        = 'blogroll'
+      body                              = %w(this is a debugging blog post by vimblog xmlrpc debug)
+      post_content['description']       = body.join("\r")
+
+      VIM::command("echo \"Let's verify what's in post content\"")
+      post_content.each_pair do |k,v|
+        if k == 'description'
+          VIM::command("echo \"Skipping #{k} because of whack-r\"")
+          next
+        end
+        VIM::command("echo \"Saw key:[#{k}] and value: [#{v}]\"")
+      end
+      VIM::command("echo \"About to send things off to a #{@blog.class}\"")
+      resp = @blog.call("metaWeblog.newPost", '', @login, @passwd, post_content, true)
+
+    end #}}}2
+
     #######
     # get post [id]. Fetches blog post with id [id], or the last one.
     #
