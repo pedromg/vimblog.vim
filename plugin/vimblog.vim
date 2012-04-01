@@ -396,26 +396,12 @@ ruby <<EOF
     end
 
     #######
-    # insert a link. Is it interesting to implement these options ?
-    # ** http://address.com
-    # ** title (hint)
-    # ** string
-    #
-    def blog_link(*args) #{{{2
-      v = VIM::Buffer.current
-      link = {:link => '', :string => '', :title => ''}
-      VIM::evaluate("a:0").to_i > 0 ? ((id = VIM::evaluate("a:1")) ? id : id = nil) : id = nil
-      v.append(v.count-1, "  a:0 --> #{VIM::evaluate("a:0")}  ")
-      v.append(v.count-1, "  a:1 --> #{VIM::evaluate("a:1")}  ")
-      v.append(v.count-1, "<a href=\"#{link[:link]}\" title=\"#{link[:title]}\">#{link[:string]}</a>")
-    end
-
-    #######
     # api calls. Allways returns an hash so that if api is changed, only this
     # function needs to be changed. One can use between Blogger, metaWeblog or
     # MovableType very easily.
     #
     def blog_api(fn_api, *args) #{{{2
+      VIM::command("echo \"IN the api and operating on #{fn_api}\"")
       begin
         case fn_api
 
