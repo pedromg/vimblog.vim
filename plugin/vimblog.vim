@@ -445,7 +445,7 @@ ruby <<EOF
             'post_comment_status' => resp['comment_status'],
             'post_allow_pings' => resp['mt_allow_pings'],
             'post_ping_status' => resp['mt_ping_status'],
-            'post_categories' => resp['categories'].join(' '),
+            'post_categories' => resp['categories'].join(', '),
             'post_body' => body
           }
 
