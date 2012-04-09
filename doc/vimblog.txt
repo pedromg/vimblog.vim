@@ -1,0 +1,75 @@
+*vimblog.vim* : Plugin for blogging from within Vim
+
+#===============================================================================
+                                                                *vimblog-author*
+Original Author:  Pedro MG 
+Major Upgrate:  Steven G. Harms <steven.harms@gmail.com>
+#===============================================================================
+
+CONTENTS                                                      *vimblog-contents*
+
+|vimblog-about|                 Introduction
+|vimblog-configuration|         Configuration
+|vimblog-usage|                 Usage
+
+ABOUT VIMBLOG                                                    *vimblog-about*
+
+For Vi, Vim or GVim users, there is a simple way to manage your blog
+posts.
+
+In the Vim environment you can now:
+
+  * Create new blog posts
+  * Edit / posts
+  * List all categories
+  * List older posts
+  * Promote turn "draft" posts into "published" (and vice-versa)
+  * Upload media to your blog from within VIM and get a link to it
+  * Mac+Wordpress+Chrome:  After using :Blog draft you can preview
+    your draft with <Leader>p, \p by default.  Additionally, if you
+    access a pre-existing post (Blog rp, then <CR> on a line with the ID
+    in it), thereafter \p will launch the entry in Chrome.
+
+In short, if you've been hanging on to Textmate for its blogging bundle,
+you now have a comparable featureset in Vim thanks to Vimblog and
+|GIFL|.
+
+It is an out-of-the-box solution that works for Wordpress, but which can
+very easilly, be customized to manage Blogger, MovableType, TextPattern,
+et al.  Its the beauty of Open Source software. Study the code, change
+it, and use it. It is very safe to use it because unlike proprietary
+software, you can check for "phone\_home" procedures, etc.
+
+VIMBLOG CONFIGURATION                                    *vimblog-configuration*
+                                                               *g:vimblogConfig*
+
+You must define the configuration in your ~/.vimrc by defining a
+dictionary (aka a Hash) called g:vimblogConfig.
+
+
+g:vimblogConfig = {
+  'login': '*username*', 
+  'passwd': '*pw*', 
+  'site': '*yoursite*', 
+  'xml_rpc_path': '/xmlrpc.php', 
+  'port': '80', 
+  'image_style': '*classes you want to add to images*'
+}
+
+                                                                 
+USING VIMBLOG                                                    *vimblog-usage*
+
+Vimblog functions are invoked from the : prompt and the keyword
+"Blog".  Thus :Blog np will allow you to create a new post, :Blog rp
+will fetch recent posts.  :Blog help will also display this help menu.
+
+  :blog rp [x]    => show recent [x] posts"
+  :blog gp id     => get post with identification id"
+  :blog np        => create a new post"
+  :blog um file   => upload media asset [path to asset]"
+  :blog publish   => publish an edited/new post"
+  :blog draft     => save edited/new post as draft"
+  :blog gc        => get the list of categories"
+  :blog del id    => delete post with identification id"
+  :blog help      => this message"
+
