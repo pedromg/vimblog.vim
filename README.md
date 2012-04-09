@@ -65,13 +65,13 @@ MacVim + Janus users, make sure it is in `~/.vimrc.after`
 
 **YOU MUST** define the following global in your `.vimrc`.
 
-          let g:vimblogConfig = {'login': '*username*', 'passwd': '*pw*', 'site': '*yoursite*', 'xml_rpc_path': '/xmlrpc.php', 'port': '80', 'image_style': '*classes you want to add to images*'}
+          let g:vimblogConfig = {'login': '*username*', 'passwd': '*pw*', 'site': '*yoursite*', 'xml_rpc_path': '/xmlrpc.php', 'port': '80', 'image_style': '*classes you want to add to images*', additional_ft': *additional filetypes that a vimblog should syntax highlight with e.g. (markdown|textile|html) - if unset, vimblog buffers will only have 'vimblog' highlighting }
 
 I put mine like so:
 
+          let g:vimblogConfig = { ... my configuration dictionary ...}
           if !exists('\*Wordpress\_vim')
                runtime vimblog.vim
-               let g:vimblogConfig = { ... my dictionary ...}
           endif
 
 `image_style` : This will provide CSS classes that are applied to the

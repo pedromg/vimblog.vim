@@ -1,42 +1,7 @@
 " vim: set foldmethod=marker: "
 " For use and setup documentation, consult the Readme.md file
 
-
-" Vim syntax functions
-" Language:     wordpress_vim
-" Maintainer:   pedro mg <pedro.mota [at] gmail.com>
-" Version:      1.1
-" Last Change:  2012 Mar 08
-" Remark:       Simple functions for vim blogging bundle in ruby.
-" Remark:       Please, if you fine tune this code, send it back
-" Remark:       for version upgrade ;)
-
-" Highlighter functions{{{ 1
-function! Blog_syn_hl()    " {{{2
-  :syntax clear
-  :syntax keyword wpType Post Title Date
-  :syntax region wpTitle start=/"/ end=/$/
-  :syntax region wpPostId start=/\[/ end=/\]/
-  :highlight wpType ctermfg=Green guifg=LightGreen
-  :highlight wpTitle cterm=bold ctermfg=Blue guifg=Blue guibg=LightCyan gui=bold
-  :highlight wpPostId ctermfg=Red guifg=Red
-endfunction
-" }}}2
-
-function! Post_syn_hl()    " {{{ 2
-  :syntax clear
-  :runtime! syntax/html.vim   " content syntax is html hl, except for headers
-  :syntax keyword wpType Post Title Date Author Link Permalink Allow Comments Allow Pings Categs
-  :syntax region wpPostId start=/\[/ end=/\]/ contained
-  :syntax match wpFields /: .*/hs=s+2 contains=wpPostId
-  :highlight wpType ctermfg=Green guifg=LightGreen gui=bold
-  :highlight wpPostId ctermfg=Red guifg=Red
-  :highlight wpFields ctermfg=Blue guifg=Blue guibg=LightCyan
-endfunction
-" }}} 2
-" }}} 1
-
-" Auxilary Ruby commands{{{ 2
+" Auxiliary Ruby commands{{{ 2
 
 "{{{3
 function! BlogHelp()
@@ -126,7 +91,6 @@ function! Wordpress_vim(start, ...)    " {{{1
       finish
   endif
 
-  call Blog_syn_hl() " comment out if you don't wish syntax highlight activation
 " }}}1
 
   try
@@ -288,7 +252,6 @@ ruby <<EOF
     def blog_np(*args) #{{{2
       @post_date = same_dt_fmt(Time.now)
       @post_author = @user
-      VIM::command("call Post_syn_hl()")
       v = VIM::Buffer.current
       v.append(v.count-1, "Title    : ")
       v.append(v.count-1, "Date     : #{@post_date}")
@@ -331,7 +294,6 @@ ruby <<EOF
     def configure_quicklist(qaction=':cclose<cr>') #{{{2
       VIM::command(":copen 10")
       VIM::command("setlocal modifiable")
-      VIM::command("call Blog_syn_hl()")
       VIM::command("nnoremap <silent> <buffer> q #{qaction}")
       v = VIM::Buffer.current
       yield v
@@ -392,7 +354,6 @@ ruby <<EOF
     # get post [id]. Fetches blog post with id [id], or the last one.
     #
     def blog_gp(*args) #{{{2
-      VIM::command("call Post_syn_hl()")
       VIM::evaluate("a:0").to_i > 0 ? ((id = VIM::evaluate("a:1")) ? id : id = nil) : id = nil
       resp = blog_api("gp", id)
       v = VIM::Buffer.current
