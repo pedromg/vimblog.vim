@@ -72,12 +72,13 @@ endfunction
 " Interface:    ruby
 " Maintainer:   pedro mg <pedro.mota [at] gmail.com>
 " Version:      1.2
-" Last Change:  2008 Jun 14
-" Remark:       script function for vim blogging bundle in ruby.
-" Remark:       Please, if you fine tune this code, send it back
-" Remark:       for version upgrade ;)
-" Remark:       V1.2 - commands added:
-" Remark:              - Blog link ADDRESS,TITLE,STRING
+" Last Change:  2012 Apr 08
+
+" Inhibit loading of the script per usr_41 of Vim manual
+if exists("g:loaded_vimblog")
+  finish
+endif
+let g:loaded_vimblog = 1
 
 :command! -nargs=* -complete=file Blog call Wordpress_vim(<f-args>)
 
@@ -268,7 +269,6 @@ ruby <<EOF
     # in a post.
     #
     def blog_cl(*args) #{{{2
-      VIM::command(%q`echo "before api call"`)
       resp = blog_api("cl")
       # create a new window with syntax highlight.
       # this allows you to rapidly close the window (q) and continue blogging.
