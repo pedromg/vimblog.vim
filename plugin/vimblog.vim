@@ -260,6 +260,12 @@ ruby <<EOF
       v.append(v.count-1, "Pings    : 1")
       v.append(v.count-1, "Categs   : ")
       v.append(v.count-1, "<Enter your content after this line - DO NOT DELETE THIS LINE>")
+      VIM::command(%q`setlocal ft=#{get_filetype}`)
+    end
+
+    def get_filetype
+      addtl = VIM::evaluate("g:vimblogConfig['additional_ft']")
+      'vimblog' + (addtl.length > 0 ? '.' + addtl : '')
     end
 
     #######
@@ -369,7 +375,8 @@ ruby <<EOF
       v.append(v.count-1, " ")
       v.append(v.count-1, " ")
       resp['post_body'].each_line { |l| v.append(v.count-1, l.strip)}
-      VIM::command("nnoremap <buffer> <Leader>p :call WordpressViewWithChromeOnMac()<cr>")
+      VIM::command("nnoremap <buffer> <Leader>p :call s:WordpressViewWithChromeOnMac()<cr>")
+      VIM::command(%Q`setlocal ft=#{get_filetype}`)
     end
 
     #######
