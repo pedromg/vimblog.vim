@@ -167,8 +167,7 @@ ruby <<EOF
     end
 
     #######
-    # class variables for personnal data. Please *change* them accordingly.
-    # CHANGE HERE:
+    # class variables for personal data. Please define in your .vimrc in g:vimblogConfig
     def get_personal_data
       config = VIM::evaluate("g:vimblogConfig")
       VIM::command("echo \"Your g:vimblogConfig configuration was not set.  Check out the vimblog README.md\"") unless config
