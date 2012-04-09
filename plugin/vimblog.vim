@@ -3,8 +3,9 @@
 
 " Auxiliary Ruby commands{{{ 2
 
+
 "{{{3
-function! BlogHelp()
+function! s:BlogHelp()
   echo "Usage is :Blog option [arg]"
   echo " switches:"
   echo "  - rp [x]    => show recent [x] posts"
@@ -19,7 +20,7 @@ function! BlogHelp()
 endfunction
 "}}}3
 
-function! CloseQuickfixAndOpenaPost(id) " {{{3
+function! s:CloseQuickfixAndOpenaPost(id) " {{{3
   cclose
   new
 ruby <<EOF
@@ -29,7 +30,7 @@ EOF
 endfunction
 " }}}3
 
-function! WordpressViewWithChromeOnMac(...) " {{{ 3
+function! s:WordpressViewWithChromeOnMac(...) " {{{ 3
   let l:storage = @@
   let @@ = 'none'
 
@@ -244,14 +245,14 @@ ruby <<EOF
         VIM::command("enew!")
         VIM::command("Blog gp #{resp['post_id']}")
       end
-      VIM::command("nnoremap <buffer> <Leader>p :call WordpressViewWithChromeOnMac('preview-mode')<cr>")
+      VIM::command("nnoremap <buffer> <Leader>p <SID>WordpressViewWithChromeOnMac('preview-mode')<cr>")
     end
 
     #######
     # new post. Creates a template for a new post.
     #
     def blog_np(*args) #{{{2
-      @post_date = same_dt_fmt(Time.now)
+      @post_date   = same_dt_fmt(Time.now)
       @post_author = @user
       v = VIM::Buffer.current
       v.append(v.count-1, "Title    : ")
@@ -278,9 +279,7 @@ ruby <<EOF
       resp = blog_api("cl")
       # create a new window with syntax highlight.
       # this allows you to rapidly close the window (q) and continue blogging.
-      configure_quicklist do
-        VIM::command(":set wrap")
-        v = VIM::Buffer.current
+      configure_quicklist do |v|
         ["CATEGORIES LIST:", " ", resp].flatten.each do |str|
           v.append(v.count, str)
         end
@@ -300,7 +299,9 @@ ruby <<EOF
     def configure_quicklist(qaction=':cclose<cr>') #{{{2
       VIM::command(":copen 10")
       VIM::command("setlocal modifiable")
+      VIM::command("setlocal wrap")
       VIM::command("nnoremap <silent> <buffer> q #{qaction}")
+      VIM::command("setl ft=vimblog.qf")
       v = VIM::Buffer.current
       yield v
     end
@@ -314,18 +315,18 @@ ruby <<EOF
       # create a new window with syntax highlight.
       # this allows you to rapidly close the window (:q!) and get that post id.
       configure_quicklist do |buf|
-        enter_action = ':call CloseQuickfixAndOpenaPost(FetchPostIDBasedOnCurrentLine())<cr>'
+        enter_action = ':call <SID>CloseQuickfixAndOpenaPost(FetchPostIDBasedOnCurrentLine())<cr>'
         VIM::command("nnoremap <silent> <buffer> <CR> #{enter_action}")
 
         buf.append(0, "Move your cursor to the line with the postID and hit <CR> to edit it.")
-        buf.append(buf.count, " ")
+        buf.append(buf.count, "")
         buf.append(buf.count, "#{num} MOST RECENT POSTS:")
-        buf.append(buf.count, " ")
+        buf.append(buf.count, "")
 
         resp.each { |r|
           buf.append(buf.count, "Post : [#{r['post_id']}]  Date: #{r['post_date']}")
           buf.append(buf.count, "Title: \"#{r['post_title']}\"")
-          buf.append(buf.count, " ")
+          buf.append(buf.count, "")
         }
 
       end
@@ -375,7 +376,7 @@ ruby <<EOF
       v.append(v.count-1, " ")
       v.append(v.count-1, " ")
       resp['post_body'].each_line { |l| v.append(v.count-1, l.strip)}
-      VIM::command("nnoremap <buffer> <Leader>p :call s:WordpressViewWithChromeOnMac()<cr>")
+      VIM::command("nnoremap <buffer> <Leader>p :call <SID>WordpressViewWithChromeOnMac()<cr>")
       VIM::command(%Q`setlocal ft=#{get_filetype}`)
     end
 
@@ -507,10 +508,10 @@ EOF
     :echo "Usage for Upload Media"
     :echo "  :Blog um [filename]"
   catch /help/
-    call BlogHelp()
+    call <SID>BlogHelp()
   catch /(.*)/
     :echo v:exception
-    call BlogHelp()
+    call <SID>BlogHelp()
   endtry
 endfunction
 " }}}1
