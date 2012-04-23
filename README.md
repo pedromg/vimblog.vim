@@ -41,7 +41,7 @@ Janus](https://github.com/carlhuda/janus)) shows: `+reltime +rightleft +ruby +sc
 go to your Pathogen root directory and then `git clone` this repository
     1.  *Janus Example*:  If you're using Janus then you're just a
         variation on the Pathogen setup.  Create a `~/.janus` directory
-and then add this repository as a submodule with `git add
+and then add this repository as a submodule with `git submodule add
 $GIT_REPO_PATH vimblog`.  Git will check out the plugin for you as a
 [git submodule](http://book.git-scm.com/5_submodules.html)
 1.  Your VIM runtime must be made aware of this plugin by means of the
