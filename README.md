@@ -52,14 +52,9 @@ MacVim + Janus users, make sure it is in `~/.vimrc.after`
                runtime vimblog.vim
           endif
 
-1.  Change your blog login/password info on the `get_personal_data`
-    function in `vimblog.vim` near line 97.
-1.  Set the `@site` value. Do not insert `http://`. Just insert the blog
-    address, like in my case `blog.tquadrado.com`
-1.  Make sure you have xmlrpc.php file in your / blog dir. If not,
-    change the `@xml` variable in `vimblog.vim` to find it.
-1.  To verify your installation, open vim, and do `:Blog rp` to get your
-    recent 10 posts.
+1.  Update your configuration credentials as described in the next section    
+1.  After completing configuration, you can verify your installation by opening vim, and executing `:Blog rp` to get your
+    recent 10 posts.  If you see them, then congratulations, you're ready to go.
 
 ## Configuration
 
