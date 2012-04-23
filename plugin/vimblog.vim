@@ -124,6 +124,10 @@ ruby <<EOF
       end
     end
 
+    def blog_debug(args)
+      blog_api('debug')
+    end
+
     def blog_help(args)
       blog_api('help')
     end
@@ -334,6 +338,7 @@ ruby <<EOF
 
     def blog_xmlrpc_debug(*args) #{{{2
       VIM::command("echo \"Creating a Debuggable Post\"")
+      VIM::command("echo \"Ruby version is #{RUBY_VERSION}\"")
       post_content = {}
 
       post_content['title']             = 'Debugging VimBlog Post'
@@ -398,6 +403,8 @@ ruby <<EOF
       begin
         case fn_api
 
+        when "debug"
+          blog_xmlrpc_debug
         when "gp"
           resp = @blog.call("metaWeblog.getPost", args[0], @login, @passwd)
       @post_id = resp['postid']
