@@ -17,6 +17,7 @@ Usage is `:Blog option [arg]`.
 - `Blog gc`: _gets categories_ list;
 - `Blog draft` saves current post as _draft_;
 - `Blog publish` _publishes_ the current post.
+- `Blog link [ADDRESS],[TITLE],[STRING]` will insert a link <a href='ADDRESS' title='TITLE'>STRING</a>
    
    
 It is out-of-the-box working for [Wordpress](https://wordpress.com), but should quite easilly be used for Blogger, MovableType, TextPattern or other platforms exposing API's.
