@@ -1,102 +1,137 @@
-# vimblog.vim
+# Vim WordPress Blogging Plugin (2025 Edition)
 
-### Description
+## ✨ Overview
+This plugin turns **Vim** into a WordPress editor with direct XML-RPC support via Ruby. You can:
+- 📝 Create and edit blog posts
+- 🚀 Publish or save drafts
+- 📂 Browse recent posts and categories
+- ❌ Delete posts
+- 🖋 Insert links easily
 
-[Vimblog.vim](https://www.vim.org/scripts/script.php?script_id=2030) is a `vim` script written in [Ruby](https://www.ruby-lang.org) that allows blog posts to be managed by commands inside the `vim` famous editor. Compatible with `Vi`, `Vim`, `GVim`, `MacVim` when compiled with `ruby` support.  
-   
-Under `Vim` environment, you can create new posts, list, edit, move to draft, publish, delete and fetch all the categories with the bellow usage.
+Supports **Vim 9+** (2025-ready) and includes a **Ruby CLI fallback** for systems without Vim `+ruby` support.
 
-### Usage
+---
 
-Usage is `:Blog option [arg]`. 
+## ⚙️ Requirements
 
-- `:Blog np` creates _new post_;
-- `:Blog rp [n]` lists most _n_ _recent posts_ (defaults to 10);
-- `:Blog gp [id]` _gets post_ with _id_, where you can edit it;
-- `Blog del [id]` _deletes_ post with id;
-- `Blog gc`: _gets categories_ list;
-- `Blog draft` saves current post as _draft_;
-- `Blog publish` _publishes_ the current post.
-- `Blog link [ADDRESS],[TITLE],[STRING]` will insert a link <a href='ADDRESS' title='TITLE'>STRING</a>
-   
-   
-It is out-of-the-box working for [Wordpress](https://wordpress.com), but should quite easilly be used for Blogger, MovableType, TextPattern or other platforms exposing API's.
-   
-Its the beauty of [open source software](https://en.wikipedia.org/wiki/Open_source). 
-Study the code, change it and use it. 
-   
-It should be safe to use it because, unlike with [proprietary software](https://en.wikipedia.org/wiki/Proprietary_software), you can check for vulnerabilities like credentials theft, etc.
+- **Vim** compiled with `+ruby` (check with `vim --version | grep ruby`)
+- Ruby (>= 3.0)
+- WordPress site with **XML-RPC enabled** (`xmlrpc.php` must exist on your server)
 
-###  Requirements:
+Optional:
+- Neovim (CLI fallback support planned)
 
-You'll need `vim` compiled with `ruby` scripting support.
-You can check this by typing:
+---
 
-```shell
-$ vim --version | grep ruby
-```
-on you current _shell_ session. The result will let you know if you have it or not. 
+## 📦 Installation
 
-Example for a `vim` with non `ruby` support:
-```shell
-+cscope            +localmap          -ruby              +wildignore
-```
-Notice the _minus_ sign in `-ruby`. You'll want to see a _plus_ sign.
+1️⃣ **Install Vim with Ruby support**
+```bash
+# Debian/Ubuntu
+sudo apt-get install vim-nox
 
-Example for a `ruby` supported vim:
-```shell
--python3 +quickfix +reltime -rightleft +ruby +scrollbind +signs +smartindent
+# macOS
+brew install vim --with-ruby
 ```
 
-
-
-#### install on [Debian](https://packages.debian.org/search?mode=filename&suite=bullseye&section=all&arch=any&searchon=names&keywords=vim)/[Ubuntu](https://packages.ubuntu.com/vim):
-
-```shell
-$ sudo apt-get install vim-ruby
+2️⃣ **Place the plugin**
+```bash
+mkdir -p ~/.vim/plugin
+cp vimblog.vim ~/.vim/plugin/
 ```
-	 
-#### install [MacVim](https://macvim-dev.github.io/macvim/) with [Homebrew](https://brew.sh):
-You can try MacVim:
 
-```shell
-$ brew install macvim
-```	 
-
-
-### How-To	 
-
-- copy `vimblog.vim` file to one of your `vim` scripts directory. Example to your `.vim` home folder:
-
-`$HOME/.vim/vimlog.vim`
-
-- add the following lines to your `.vimrc` file. If it does not exist, create it ($HOME/.vimrc):
-
+3️⃣ **Update `.vimrc`**
 ```vim
 if !exists('*Wordpress_vim')
-   runtime vimblog.vim
+  runtime vimblog.vim
 endif
 ```
-- open the vimblog.vim script and edit the personal data in the `get_personal_data` method approximatelly at line 97, update your blog login/password info; 
-- `@site` value: do not insert “http://”. Just insert the blog address, something like _blog.exmaple.com_;
-- `@xml` value: make sure you have `xmlrpc.php` file in your / blog dir. If not, change the `@xml` variable to the correct location;
 
-##### Test the script:
-
-- open `vim` and try to get your 10 most recent posts (rp):
+4️⃣ **Create config file**
 ```vim
-:Blog rp
+" ~/.vim/blog_config.vim
+let g:vimblog_login = "your-username"
+let g:vimblog_passwd = "your-password"
+let g:vimblog_site = "example.com"
+let g:vimblog_xml = "/xmlrpc.php"
+let g:vimblog_port = 80
 ```
 
-If you can see them, it’s fine. If not, test this:
+---
 
-- check if the script is being found, by typing :B + TAB key. If it auto-completes to _Blog_ it is finding the script. Remember, capital B.
-- if error persist, check for the correct path for `xmlrpc.php` in `@xml` value.
+## 📜 Usage
 
+### 🆕 Create a new post
+```vim
+:BlogNew
+```
+Opens a new buffer template with fields like `Title`, `Date`, etc.
 
-Have fun 🎉
+### 🚀 Publish a post
+```vim
+:BlogPublish
+```
+Publishes the current buffer to WordPress.
+
+### 💾 Save as draft
+```vim
+:BlogDraft
+```
+Saves your post as a draft.
+
+### 📂 List recent posts
+```vim
+:BlogRecent [n]
+```
+Shows the **last n posts** (defaults to 10).
+
+### 🔍 Get post by ID
+```vim
+:BlogGet <id>
+```
+Fetches and loads post into buffer for editing.
+
+### ❌ Delete a post
+```vim
+:BlogDelete <id>
+```
+Deletes post after confirmation.
+
+### 🏷 List categories
+```vim
+:BlogCategories
+```
+Opens a temporary window listing categories.
+
+---
+
+## 🛠 CLI Fallback
+
+If Vim **does not** have Ruby support, the plugin will fall back to a Ruby CLI script:
+```bash
+~/.vim/vimblog.rb
+```
+This script must handle the same commands (e.g. `ruby vimblog.rb publish`).
+
+---
+
+## 🔐 Security Notes
+- ✅ Supports password authentication.
+- 🔜 Planned support for **application passwords** (WordPress 5.6+) and token-based auth.
+
+---
+
+## 📄 License
+MIT License – free to modify and redistribute.
+
+## 🤝 Contributing
+Pull requests welcome! Submit improvements, fixes, or modern WordPress API integrations.
+
+---
+
+## 👤 Maintainers
+- Original Author: Pedro Mota (2008)
+- 2025 Refactor
 
 Also, check this Vim colorscheme [vim_pr0kter](https://github.com/pedromg/vim_pr0kter).
-
-
-
+Have fun 🎉
